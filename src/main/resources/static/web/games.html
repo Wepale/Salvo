@@ -26,8 +26,11 @@
             <div>
                 <p>{{game.created}}</p>
             </div>
-            <div v-if="isLoginAndGameOwner(game)">
+            <div v-if="isLoginGameOwner(game)">
                 <button @click="goToGame(game)">Game</button>
+            </div>
+            <div v-else-if="isLoginCanJoinGame(game)">
+                <button @click="joinGame(game)">Join Game</button>
             </div>
         </div>
     </div>

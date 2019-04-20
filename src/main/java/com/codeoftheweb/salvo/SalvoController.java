@@ -126,6 +126,44 @@ public class SalvoController {
         }
     }
 
+    @RequestMapping("/games/{gameId}/players")
+    public ResponseEntity<Map<String, Object>> getGame(@PathVariable Long gameId) {
+        Optional<Game> game = gameRepo.findById(gameId);
+        return game.isPresent()
+                ? new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
+                    put("gamePlayers", game.get()
+                            .getGamePlayers()
+                            .stream()
+                            .map(GamePlayer::toDTOGameView)); }}, HttpStatus.CREATED)
+                : new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
+                    put("error", "Game don´t exist"); }}, HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/games/{gameId}/players", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createGame(@PathVariable Long gameId, Authentication authentication) {
+        Optional<Game> game = gameRepo.findById(gameId);
+        Optional<Player> player = getPlayerOptional(authentication);
+        if (!player.isPresent()){
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "You must be login first");
+            }}, HttpStatus.UNAUTHORIZED);
+        } else if (!game.isPresent()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "The game doesn´t exist");
+            }}, HttpStatus.FORBIDDEN);
+        } else if (game.get().getGamePlayers().size() > 1) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "Game is full");
+            }}, HttpStatus.FORBIDDEN);
+        } else {
+            GamePlayer gp = new GamePlayer(player.get(), game.get());
+            gpRepo.save(gp);
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("gpID", gp.getId());
+            }}, HttpStatus.CREATED);
+        }
+    }
+
     @RequestMapping("/players")
     public List<Object> getScorePlayers() {
         return playerRepo.findAll()

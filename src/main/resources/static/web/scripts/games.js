@@ -7,7 +7,7 @@ const vmGames = new Vue({
 
     methods: {
 
-        async getGames(){
+        async getGames() {
             try {
                 const data = await (await fetch("http://localhost:8080/api/games", {
                     method: "GET",
@@ -21,20 +21,44 @@ const vmGames = new Vue({
             }
         },
 
-        isLoginAndGameOwner(game){
+        isLoginGameOwner(game) {
           return !!game.gamePlayers
               .filter(gp => gp.player.id === this.playerID)
-              .length
+              .length;
         },
 
-        goToGame(game){
+        goToGame(game) {
             const gpID = game.gamePlayers
                 .find(gp => gp.player.id === this.playerID)
                 .id;
             window.location.href = `http://localhost:8080/web/game.html?gp=${gpID}`;
         },
 
-        async createGame(){
+        async joinGame(game) {
+            try {
+                let response = await fetch(`http://localhost:8080/api/games/${game.id}/players`, {
+                    method: 'POST',
+                    credentials: 'include',
+                });
+                const message = await response.json();
+                if (response.status === 201) {
+                    console.log(message);
+                    window.location.href = `http://localhost:8080/web/game.html?gp=${message.gpID}`;
+                } else if (response.status === 403) {
+                    alert(`${response.status}: ${message.error}`)
+                } else{
+                    alert("Something went wrong, try again later");
+                }
+            } catch (error) {
+                console.log("Error: ", error)
+            }
+        },
+
+        isLoginCanJoinGame(game){
+            return game.gamePlayers.length === 1 && this.playerID
+        },
+
+        async createGame() {
             const date = new Date();
             try {
                 let response = await fetch('http://localhost:8080/api/games', {
@@ -63,7 +87,7 @@ const vmGames = new Vue({
         }
     },
 
-    created(){
+    created() {
         this.getGames();
     }
 });

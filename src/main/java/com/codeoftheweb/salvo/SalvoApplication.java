@@ -364,9 +364,10 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-				.antMatchers("/rest/**").denyAll()
+//				.antMatchers("/rest/**").denyAll()
 				.antMatchers("/api/games",
 						"/api/players",
+						"/api/games/**",
 						"/web/**",
 						"/favicon.ico")
 				.permitAll()
