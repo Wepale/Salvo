@@ -42,7 +42,6 @@ const vmGames = new Vue({
                 });
                 const message = await response.json();
                 if (response.status === 201) {
-                    console.log(message);
                     window.location.href = `http://localhost:8080/web/game.html?gp=${message.gpID}`;
                 } else if (response.status === 403) {
                     alert(`${response.status}: ${message.error}`)
@@ -59,26 +58,55 @@ const vmGames = new Vue({
         },
 
         async createGame() {
-            const date = new Date();
+                const date = new Date();
+                try {
+                    let response = await fetch('http://localhost:8080/api/games', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            date: `${date.getDate() < 10 ? '0' : ''}${date.getDate()}/${date.getMonth() < 9 ? '0' : ''}${date.getMonth() + 1}/${date.getFullYear()}
+                        ${date.getHours() < 10 ? '0' : ''}${date.getHours()}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}:${date.getSeconds() < 10 ? '0' : ''}${date.getSeconds()}`
+                        })
+                    });
+                    const message = await response.json();
+                    if (response.status === 201) {
+                        window.location.href = `http://localhost:8080/web/game.html?gp=${message.gpID}`;
+                    } else if (response.status === 403) {
+                        alert(`${response.status}: ${message.error}`)
+                    } else{
+                        alert("Something went wrong, try again later");
+                    }
+                } catch (error) {
+                    console.log("Error: ", error)
+                }
+        },
+
+        async placeShips() {
             try {
-                let response = await fetch('http://localhost:8080/api/games', {
+                let response = await fetch('http://localhost:8080/api/games/players/15/ships', {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        date: `${date.getDate() < 10 ? '0' : ''}${date.getDate()}/${date.getMonth() < 9 ? '0' : ''}${date.getMonth() + 1}/${date.getFullYear()}
-                        ${date.getHours() < 10 ? '0' : ''}${date.getHours()}:${date.getMinutes() < 10 ? '0' : ''}${date.getMinutes()}:${date.getSeconds() < 10 ? '0' : ''}${date.getSeconds()}`
-                    })
+                    body: JSON.stringify(
+                        [
+                            {type: "Carrier", location: ["A1", "A2", "A3"]},
+                            {type: "Destroyer", location: ["B1", "B2", "B3"]}
+                        ]
+                    )
                 });
                 const message = await response.json();
                 if (response.status === 201) {
-                    window.location.href = `http://localhost:8080/web/game.html?gp=${message.gpID}`;
-                } else if (response.status === 403) {
+                    window.location.href = "http://localhost:8080/web/game.html?gp=15";
+                } else if (response.status === 403 || response.status === 401) {
                     alert(`${response.status}: ${message.error}`)
-                } else{
+                } else {
                     alert("Something went wrong, try again later");
                 }
             } catch (error) {

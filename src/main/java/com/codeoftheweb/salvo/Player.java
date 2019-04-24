@@ -44,10 +44,6 @@ public class Player {
         return userName;
     }
 
-//    public List<Object> getGamePlayersById() {
-//        return gamePlayers.stream().map(gp -> gp.toDTO()).collect(toList());
-//    }
-
     public long getId() {
         return this.id;
     }

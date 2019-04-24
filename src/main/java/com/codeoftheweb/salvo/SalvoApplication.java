@@ -14,8 +14,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.WebAttributes;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
@@ -369,7 +367,8 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 						"/api/players",
 						"/api/games/**",
 						"/web/**",
-						"/favicon.ico")
+						"/favicon.ico",
+                        "/rest/**")
 				.permitAll()
 				.anyRequest().hasAuthority("USER");
 

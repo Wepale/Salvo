@@ -39,7 +39,7 @@
                 <tbody>
                 <tr v-for="letter of tableLetters">
                     <td>{{ letter }}</td>
-                    <td v-for="number in 10" :id="`mainPlayer${letter}${number}`"></td>
+                    <td class="grey" v-for="number in 10" :id="`mainPlayer${letter}${number}`"></td>
                 </tr>
                 </tbody>
             </table>

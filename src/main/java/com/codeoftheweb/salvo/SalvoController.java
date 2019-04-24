@@ -20,9 +20,8 @@ public class SalvoController {
     @Autowired
     private GamePlayerRepository gpRepo;
 
-    private Optional<Player> getPlayerOptional(Authentication authentication) {
-        return authentication == null ? Optional.empty() : playerRepo.findByUserName(authentication.getName());
-    }
+    @Autowired
+    private ShipRepository shipRepo;
 
     @RequestMapping("/games")
     public Map<String, Object> getGames(Authentication authentication) {
@@ -36,37 +35,21 @@ public class SalvoController {
         }};
     }
 
-    private Map<String, Object> makeGameInfo(Game game) {
-        return new LinkedHashMap<String, Object>() {{
-            put("id", game.getId());
-            put("created", game.getDate());
-            put("gamePlayers", game.getGamePlayers()
-                    .stream()
-                    .map(GamePlayer::toDTOGame)
-                    .collect(toList()));
-        }};
-    }
-
-    private Map<String, Object> mapPlayerinfo(Player player) {
-        return new LinkedHashMap<String, Object>() {{
-            put("id", player.getId());
-            put("email", player.getUserName());
-        }};
-    }
-
-    private List<Object> mapGamePlayersinfo(Set<GamePlayer> gps) {
-        return gps.stream()
-                .map(gp -> new LinkedHashMap<String, Object>() {{
-                    put("id", gp.getId());
-                    put("player", gp.getPlayer().toDTO());
-                }})
-                .collect(toList());
-    }
-
-    private List<Object> mapShipsinfo(Set<Ship> ships) {
-        return ships.stream()
-                .map(Ship::toDTO)
-                .collect(toList());
+    @RequestMapping(value = "/games", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> createGame(@RequestBody Game game, Authentication authentication){
+        Optional<Player> player = getPlayerOptional(authentication);
+        if (player.isPresent()) {
+            GamePlayer gp = new GamePlayer(player.get(), game);
+            gameRepo.save(game);
+            gpRepo.save(gp);
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("gpID", gp.getId());
+            }}, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "You must be login first");
+            }}, HttpStatus.FORBIDDEN);
+        }
     }
 
     @RequestMapping("/game_view/{gpId}")
@@ -95,6 +78,13 @@ public class SalvoController {
                 : new ResponseEntity<>( Arrays.asList("You are not allowed, be honest please"), HttpStatus.FORBIDDEN);
     }
 
+    @RequestMapping("/players")
+    public List<Object> getScorePlayers() {
+        return playerRepo.findAll()
+                .stream()
+                .map(Player::toDTOscore)
+                .collect(toList());
+    }
 
     @RequestMapping(value = "/players", method = RequestMethod.POST)
     public ResponseEntity<String> signUpPlayer(@RequestBody Player player) {
@@ -107,23 +97,6 @@ public class SalvoController {
 
         playerRepo.save(player);
         return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @RequestMapping(value = "/games", method = RequestMethod.POST)
-    public ResponseEntity<Map<String, Object>> createGame(@RequestBody Game game, Authentication authentication){
-        Optional<Player> player = getPlayerOptional(authentication);
-        if (player.isPresent()) {
-            GamePlayer gp = new GamePlayer(player.get(), game);
-            gameRepo.save(game);
-            gpRepo.save(gp);
-            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-                put("gpID", gp.getId());
-            }}, HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-                put("error", "You must be login first");
-            }}, HttpStatus.FORBIDDEN);
-        }
     }
 
     @RequestMapping("/games/{gameId}/players")
@@ -143,32 +116,117 @@ public class SalvoController {
     public ResponseEntity<Map<String, Object>> createGame(@PathVariable Long gameId, Authentication authentication) {
         Optional<Game> game = gameRepo.findById(gameId);
         Optional<Player> player = getPlayerOptional(authentication);
+
         if (!player.isPresent()){
             return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
                 put("error", "You must be login first");
             }}, HttpStatus.UNAUTHORIZED);
-        } else if (!game.isPresent()) {
+        }
+
+        if (!game.isPresent()) {
             return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
                 put("error", "The game doesn´t exist");
             }}, HttpStatus.FORBIDDEN);
-        } else if (game.get().getGamePlayers().size() > 1) {
+        }
+
+        if (game.get().getGamePlayers().size() > 1) {
             return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
                 put("error", "Game is full");
             }}, HttpStatus.FORBIDDEN);
-        } else {
-            GamePlayer gp = new GamePlayer(player.get(), game.get());
-            gpRepo.save(gp);
-            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-                put("gpID", gp.getId());
-            }}, HttpStatus.CREATED);
         }
+
+        GamePlayer gp = new GamePlayer(player.get(), game.get());
+        gpRepo.save(gp);
+        return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+            put("gpID", gp.getId());
+        }}, HttpStatus.CREATED);
     }
 
-    @RequestMapping("/players")
-    public List<Object> getScorePlayers() {
-        return playerRepo.findAll()
-                .stream()
-                .map(Player::toDTOscore)
-                .collect(toList());
+    @RequestMapping("/games/players/{gpId}/ships")
+    public ResponseEntity<Map<String, Object>> getShips(@PathVariable Long gpId) {
+        Optional<GamePlayer> gp = gpRepo.findById(gpId);
+        return gp.isPresent()
+                ? new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
+                    put("gamePlayers", gp.get()
+                            .getShips()
+                            .stream()
+                            .map(Ship::toDTO)); }}, HttpStatus.CREATED)
+                : new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
+                    put("error", "Game don´t exist"); }}, HttpStatus.NOT_FOUND);
     }
+
+    @RequestMapping(value = "/games/players/{gpId}/ships", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> placeShips(@PathVariable Long gpId, @RequestBody List<Ship> ships, Authentication authentication) {
+        Optional<GamePlayer> gp = gpRepo.findById(gpId);
+        Optional<Player> player = getPlayerOptional(authentication);
+
+        if (!player.isPresent()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "You must be login first");
+            }}, HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!gp.isPresent()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "The GamePlayer doesn´t exist");
+            }}, HttpStatus.UNAUTHORIZED);
+        }
+
+        if (gp.get().getPlayer().getId() != player.get().getId()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "The current user is not the GamePlayer the ID references");
+            }}, HttpStatus.UNAUTHORIZED);
+        }
+
+        if(!gp.get().getShips().isEmpty()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "The current user already has ships placed");
+            }}, HttpStatus.FORBIDDEN);
+        }
+
+        ships.forEach(ship -> {
+                    gp.get().addShip(ship);
+                    shipRepo.save(ship);
+                });
+        return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+            put("succes", "Ships saved");
+        }}, HttpStatus.CREATED);
+    }
+
+    private Optional<Player> getPlayerOptional(Authentication authentication) {
+        return authentication == null ? Optional.empty() : playerRepo.findByUserName(authentication.getName());
+    }
+
+    private Map<String, Object> makeGameInfo(Game game) {
+        return new LinkedHashMap<String, Object>() {{
+            put("id", game.getId());
+            put("created", game.getDate());
+            put("gamePlayers", game.getGamePlayers()
+                    .stream()
+                    .map(GamePlayer::toDTOGame)
+                    .collect(toList()));
+        }};
+    }
+
+//    private Map<String, Object> mapPlayerinfo(Player player) {
+//        return new LinkedHashMap<String, Object>() {{
+//            put("id", player.getId());
+//            put("email", player.getUserName());
+//        }};
+//    }
+//
+//    private List<Object> mapGamePlayersinfo(Set<GamePlayer> gps) {
+//        return gps.stream()
+//                .map(gp -> new LinkedHashMap<String, Object>() {{
+//                    put("id", gp.getId());
+//                    put("player", gp.getPlayer().toDTO());
+//                }})
+//                .collect(toList());
+//    }
+//
+//    private List<Object> mapShipsinfo(Set<Ship> ships) {
+//        return ships.stream()
+//                .map(Ship::toDTO)
+//                .collect(toList());
+//    }
 }

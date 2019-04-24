@@ -1,3 +1,11 @@
 td {
     text-align: center;
+    width: 50px;
+    max-width: 50px;
 }
+
+.ship{
+    background-color: lightgrey;
+}
+
+

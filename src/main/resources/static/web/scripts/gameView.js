@@ -42,9 +42,50 @@ const vm = new Vue({
                         }
                     }));
         },
+
+        makeHoverTable(){
+            document.querySelectorAll(".grey")
+                .forEach(td => ["mouseenter", "mouseleave"]
+                        .forEach(even => td.addEventListener(even, () => this.makeHoverCells(td, 4, "vertical")))
+                )
+        },
+
+        makeHoverHorizontal(numberID, letterID, shipSize){
+            let numbers = [];
+
+            11 - numberID < shipSize
+                ? numbers = Array.from(Array(10), (e, i) => i + 1).slice(-shipSize)
+                : numbers = Array.from(Array(10), (e, i) => i + 1).slice(numberID - 1, numberID - 1 + shipSize);
+
+            numbers.forEach(number => this.getElement(`mainPlayer${letterID}${number}`).classList.toggle("ship"));
+        },
+
+        makeHoverVertical(numberID, letterID, shipSize){
+            const lettersAndNumbers = new Map(this.tableLetters.map( (letter, index) => [letter , index + 1]));
+            let letters = [];
+
+            11 - lettersAndNumbers.get(letterID) < shipSize
+                ? letters = this.tableLetters.slice(-shipSize)
+                : letters = this.tableLetters.slice(lettersAndNumbers.get(letterID) - 1, lettersAndNumbers.get(letterID) - 1 + shipSize);
+
+            letters.forEach(letter => this.getElement(`mainPlayer${letter}${numberID}`).classList.toggle("ship"));
+        },
+
+        makeHoverCells(td, shipSize, direcction = "horizontal") {
+            const letterID = td.id.slice(10,11);
+            const numberID = td.id.slice(11);
+
+            direcction === "horizontal"
+                ? this.makeHoverHorizontal(numberID, letterID, shipSize)
+                : this.makeHoverVertical(numberID, letterID, shipSize);
+            }
     },
     created() {
         this.getData(`${this.gameViewURL}${this.urlParams}`);
+    },
+
+    mounted(){
+        this.makeHoverTable();
     }
 
 });
