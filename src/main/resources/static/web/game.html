@@ -29,18 +29,76 @@
     <div class="row" id="vueGameView">
         <div class="col-sm">
             <h1 class="text-center">Ships Location</h1>
+            <div class="d-flex">
+                <div v-if="!shipIsPlaced.carrier">
+                    <p>Carrier</p>
+                    <form>
+                        <input type="radio" name="ship" value="5Vcarrier" id="carrierV" v-model="check"
+                               @click="addEvents()">
+                        <label for="carrierV">Vertical</label>
+                        <input type="radio" name="ship" value="5Hcarrier" id="carrierH" v-model="check"
+                               @click="addEvents()">
+                        <label for="carrierH">Horizontal</label>
+                    </form>
+                </div>
+                <div v-if="!shipIsPlaced.battleship">
+                    <p>Battleship</p>
+                    <form>
+                        <input type="radio" name="ship" value="4Vbattleship" id="battleshipV" v-model="check"
+                               @click="addEvents()">
+                        <label for="battleshipV">Vertical</label>
+                        <input type="radio" name="ship" value="4Hbattleship" id="battlesHipH" v-model="check"
+                               @click="addEvents()">
+                        <label for="battleshipH">Horizontal</label>
+                    </form>
+                </div>
+                <div v-if="!shipIsPlaced.submarine">
+                    <p>Submarine</p>
+                    <form>
+                        <input type="radio" name="ship" value="3Vsubmarine" id="submarineV" v-model="check"
+                               @click="addEvents()">
+                        <label for="submarineV">Vertical</label>
+                        <input type="radio" name="ship" value="3Hsubmarine" id="submarineH" v-model="check"
+                               @click="addEvents()">
+                        <label for="submarineH">Horizontal</label>
+                    </form>
+                </div>
+                <div v-if="!shipIsPlaced.destroyer">
+                    <p>Destroyer</p>
+                    <form>
+                        <input type="radio" name="ship" value="3Vdestroyer" id="destroyerV" v-model="check"
+                               @click="addEvents">
+                        <label for="destroyerV">Vertical</label>
+                        <input type="radio" name="ship" value="3Hdestroyer" id="destroyerH" v-model="check"
+                               @click="addEvents">
+                        <label for="destroyerH">Horizontal</label>
+                    </form>
+                </div>
+                <div v-if="!shipIsPlaced.patrolBoat">
+                    <p>Patrol Boat</p>
+                    <form>
+                        <input type="radio" name="ship" value="2VpatrolBoat" id="patrolBoatV" v-model="check"
+                               @click="addEvents">
+                        <label for="patrolBoatV">Vertical</label>
+                        <input type="radio" name="ship" value="2HpatrolBoat" id="patrolBoatH" v-model="check"
+                               @click="addEvents">
+                        <label for="patrolBoatH">Horizontal</label>
+                    </form>
+                </div>
+            </div>
             <table class="table table-bordered">
                 <thead>
-                <tr>
-                    <td></td>
-                    <td v-for="n in 10">{{ n }}</td>
-                </tr>
+                    <tr>
+                        <td></td>
+                        <td v-for="n in 10">{{ n }}</td>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr v-for="letter of tableLetters">
-                    <td>{{ letter }}</td>
-                    <td class="grey" v-for="number in 10" :id="`mainPlayer${letter}${number}`"></td>
-                </tr>
+                    <tr v-for="letter of tableLetters">
+                        <td>{{ letter }}</td>
+                        <td class="selectable" v-for="number in 10" :id="`mainPlayer${letter}${number}`"
+                            :data-size="check.slice(0,1)" :data-direction="check.slice(1,2)" :data-type="check.slice(2)"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>

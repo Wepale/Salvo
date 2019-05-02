@@ -4,8 +4,37 @@ td {
     max-width: 50px;
 }
 
-.ship{
-    background-color: lightgrey;
+.carrier{
+    background-color: lightcoral;
+    border-radius: 15%;
 }
+
+.battleship {
+    background-color: darkcyan;
+    border-radius: 15%;
+}
+
+.submarine {
+    background-color: seagreen;
+    border-radius: 15%;
+}
+
+.destroyer {
+    background-color: greenyellow;
+    border-radius: 15%;
+}
+
+.patrolBoat {
+    background-color: burlywood;
+    border-radius: 15%;
+}
+
+.notPossibleShip {
+    background-color: grey;
+    border-radius: 15%;
+}
+
+
+
 
 

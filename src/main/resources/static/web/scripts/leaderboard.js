@@ -12,10 +12,8 @@ const vm = new Vue({
                     method: "GET",
                     dataType: 'json',
                 })).json();
-                console.log(data)
                 this.data = data.games;
                 this.playerScore = this.createObject(this.data);
-                console.log(this.playerScore)
             } catch (error) {
                 console.log(`Failed: ${error}`);
             }
