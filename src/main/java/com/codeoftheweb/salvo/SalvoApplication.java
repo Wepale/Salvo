@@ -27,11 +27,11 @@ import java.util.Arrays;
 @SpringBootApplication
 public class SalvoApplication {
 
-	private static final String PATROL_BOAT = "Patrol Boat";
-	private static final String BATTLESHIP = "Battleship";
-	private static final String SUBMARINE = "Submarine";
-	private static final String CARRIER = "Carrier";
-	private static final String DESTROYER = "Destroyer";
+	private static final String PATROL_BOAT = "patrolBoat";
+	private static final String BATTLESHIP = "battleship";
+	private static final String SUBMARINE = "submarine";
+	private static final String CARRIER = "carrier";
+	private static final String DESTROYER = "destroyer";
 
 	public static void main(String[] args) {
 		SpringApplication.run(SalvoApplication.class, args);

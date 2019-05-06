@@ -34,10 +34,10 @@
                     <p>Carrier</p>
                     <form>
                         <input type="radio" name="ship" value="5Vcarrier" id="carrierV" v-model="check"
-                               @click="addEvents()">
+                               @click="addEventsOnShipTable()">
                         <label for="carrierV">Vertical</label>
                         <input type="radio" name="ship" value="5Hcarrier" id="carrierH" v-model="check"
-                               @click="addEvents()">
+                               @click="addEventsOnShipTable()">
                         <label for="carrierH">Horizontal</label>
                     </form>
                 </div>
@@ -45,10 +45,10 @@
                     <p>Battleship</p>
                     <form>
                         <input type="radio" name="ship" value="4Vbattleship" id="battleshipV" v-model="check"
-                               @click="addEvents()">
+                               @click="addEventsOnShipTable()">
                         <label for="battleshipV">Vertical</label>
                         <input type="radio" name="ship" value="4Hbattleship" id="battlesHipH" v-model="check"
-                               @click="addEvents()">
+                               @click="addEventsOnShipTable()">
                         <label for="battleshipH">Horizontal</label>
                     </form>
                 </div>
@@ -56,10 +56,10 @@
                     <p>Submarine</p>
                     <form>
                         <input type="radio" name="ship" value="3Vsubmarine" id="submarineV" v-model="check"
-                               @click="addEvents()">
+                               @click="addEventsOnShipTable()">
                         <label for="submarineV">Vertical</label>
                         <input type="radio" name="ship" value="3Hsubmarine" id="submarineH" v-model="check"
-                               @click="addEvents()">
+                               @click="addEventsOnShipTable()">
                         <label for="submarineH">Horizontal</label>
                     </form>
                 </div>
@@ -67,10 +67,10 @@
                     <p>Destroyer</p>
                     <form>
                         <input type="radio" name="ship" value="3Vdestroyer" id="destroyerV" v-model="check"
-                               @click="addEvents">
+                               @click="addEventsOnShipTable">
                         <label for="destroyerV">Vertical</label>
                         <input type="radio" name="ship" value="3Hdestroyer" id="destroyerH" v-model="check"
-                               @click="addEvents">
+                               @click="addEventsOnShipTable">
                         <label for="destroyerH">Horizontal</label>
                     </form>
                 </div>
@@ -78,10 +78,10 @@
                     <p>Patrol Boat</p>
                     <form>
                         <input type="radio" name="ship" value="2VpatrolBoat" id="patrolBoatV" v-model="check"
-                               @click="addEvents">
+                               @click="addEventsOnShipTable">
                         <label for="patrolBoatV">Vertical</label>
                         <input type="radio" name="ship" value="2HpatrolBoat" id="patrolBoatH" v-model="check"
-                               @click="addEvents">
+                               @click="addEventsOnShipTable">
                         <label for="patrolBoatH">Horizontal</label>
                     </form>
                 </div>
@@ -96,11 +96,14 @@
                 <tbody>
                     <tr v-for="letter of tableLetters">
                         <td>{{ letter }}</td>
-                        <td class="selectable" v-for="number in 10" :id="`mainPlayer${letter}${number}`"
+                        <td class="shipTable" v-for="number in 10" :id="`mainPlayer${letter}${number}`"
                             :data-size="check.slice(0,1)" :data-direction="check.slice(1,2)" :data-type="check.slice(2)"></td>
                     </tr>
                 </tbody>
             </table>
+            <div class="col-sm">
+                <button :disabled="shipsToSend.length != 5" @click="postShips()">Place Ships</button>
+            </div>
         </div>
 
         <div class="col-sm">
@@ -115,11 +118,16 @@
                 <tbody>
                 <tr v-for="letter of tableLetters">
                     <td>{{ letter }}</td>
-                    <td v-for="number in 10" :id="`salvo${letter}${number}`"></td>
+                    <td class="salvoTable" v-for="number in 10" :id="`salvo${letter}${number}`"></td>
                 </tr>
                 </tbody>
             </table>
+            <div class="col-sm">
+                <button :disabled="newSalvo.length != 5" @click="postSalvo()">Shoot</button>
+            </div>
         </div>
+    </div>
+    <div class="row">
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>

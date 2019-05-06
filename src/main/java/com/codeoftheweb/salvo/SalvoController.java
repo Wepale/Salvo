@@ -5,6 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import static java.util.stream.Collectors.toList;
 
 @RestController
@@ -22,6 +27,9 @@ public class SalvoController {
 
     @Autowired
     private ShipRepository shipRepo;
+
+    @Autowired
+    private SalvoRepository salvoRepo;
 
     @RequestMapping("/games")
     public Map<String, Object> getGames(Authentication authentication) {
@@ -75,7 +83,9 @@ public class SalvoController {
                                     .map(Salvo::toDTO)));
                 }})
                 .collect(toList()), HttpStatus.OK)
-                : new ResponseEntity<>( Arrays.asList("You are not allowed, be honest please"), HttpStatus.FORBIDDEN);
+                : new ResponseEntity<>( Arrays.asList(new LinkedHashMap<String, Object>() {{
+                    put("error", "This is not your game");
+                }}), HttpStatus.FORBIDDEN);
     }
 
     @RequestMapping("/players")
@@ -147,12 +157,12 @@ public class SalvoController {
         Optional<GamePlayer> gp = gpRepo.findById(gpId);
         return gp.isPresent()
                 ? new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
-                    put("gamePlayers", gp.get()
+                    put("ships", gp.get()
                             .getShips()
                             .stream()
                             .map(Ship::toDTO)); }}, HttpStatus.CREATED)
                 : new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
-                    put("error", "Game don´t exist"); }}, HttpStatus.NOT_FOUND);
+                    put("error", "Game player doesn´t exist"); }}, HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping(value = "/games/players/{gpId}/ships", method = RequestMethod.POST)
@@ -160,22 +170,8 @@ public class SalvoController {
         Optional<GamePlayer> gp = gpRepo.findById(gpId);
         Optional<Player> player = getPlayerOptional(authentication);
 
-        if (!player.isPresent()) {
-            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-                put("error", "You must be login first");
-            }}, HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!gp.isPresent()) {
-            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-                put("error", "The GamePlayer doesn´t exist");
-            }}, HttpStatus.UNAUTHORIZED);
-        }
-
-        if (gp.get().getPlayer().getId() != player.get().getId()) {
-            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-                put("error", "The current user is not the GamePlayer the ID references");
-            }}, HttpStatus.UNAUTHORIZED);
+        if (checkPlayerAndGP(gp, player).getStatusCode() != HttpStatus.OK) {
+            return checkPlayerAndGP(gp, player);
         }
 
         if(!gp.get().getShips().isEmpty()) {
@@ -184,16 +180,111 @@ public class SalvoController {
             }}, HttpStatus.FORBIDDEN);
         }
 
-        ships.forEach(ship -> {
-                    gp.get().addShip(ship);
-                    shipRepo.save(ship);
-                });
-        return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
-            put("succes", "Ships saved");
-        }}, HttpStatus.CREATED);
+        if (checkShips(ships)){
+            ships.forEach(ship -> {
+                gp.get().addShip(ship);
+                shipRepo.save(ship);
+            });
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("succes", "Ships saved");
+            }}, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "The ships are not correct");
+            }}, HttpStatus.FORBIDDEN);
+        }
     }
 
-    private Optional<Player> getPlayerOptional(Authentication authentication) {
+    @RequestMapping("/games/players/{gpId}/salvoes")
+    public ResponseEntity<Map<String, Object>> getSalvoes(@PathVariable Long gpId) {
+        Optional<GamePlayer> gp = gpRepo.findById(gpId);
+        return gp.isPresent()
+                ? new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
+            put("salvos", gp.get()
+                    .getSalvos()
+                    .stream()
+                    .map(Salvo::toDTO)); }}, HttpStatus.CREATED)
+                : new ResponseEntity<> (new LinkedHashMap<String, Object>() {{
+            put("error", "Game player doesn´t exist"); }}, HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "games/players/{gpId}/salvoes", method = RequestMethod.POST)
+    public ResponseEntity<Map<String, Object>> placeShips(@PathVariable Long gpId, @RequestBody Salvo salvo, Authentication authentication) {
+        Optional<GamePlayer> gp = gpRepo.findById(gpId);
+        Optional<Player> player = getPlayerOptional(authentication);
+
+        if (checkPlayerAndGP(gp, player).getStatusCode() != HttpStatus.OK) {
+            return checkPlayerAndGP(gp, player);
+        }
+
+        Optional<GamePlayer> otherGp = gp.get()
+                .getGame()
+                .getGamePlayers()
+                .stream()
+                .filter(gameP -> gameP.getId() != gp.get().getId()).findFirst();
+
+        if (!otherGp.isPresent()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "Wait for another player");
+            }}, HttpStatus.FORBIDDEN);
+        }
+
+        if (gp.get().getSalvos().size() > otherGp.get().getSalvos().size()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "Your opponent has to shoot first");
+            }}, HttpStatus.FORBIDDEN);
+        }
+
+        if (salvoIsCorrect(salvo, gp.get())) {
+            gp.get().addSalvo(salvo);
+            salvoRepo.save(salvo);
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("succes", "Salvo saved");
+            }}, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "The salvo is not correct");
+            }}, HttpStatus.FORBIDDEN);
+        }
+    }
+
+    private boolean salvoIsCorrect(Salvo salvo, GamePlayer gp){
+        int highestTurn = gp.getSalvos()
+                .stream()
+                .mapToInt(Salvo::getTurn)
+                .max()
+                .orElse(0);
+        return salvo.getTurn() > highestTurn
+                && salvo.getTurn() - 1 == highestTurn
+                && salvo.getLocations().size() == 5
+                && new HashSet<>(salvo.getLocations()).size() == salvo.getLocations().size()
+                && correctLocations(salvo.getLocations());
+    }
+
+    private ResponseEntity<Map<String, Object>> checkPlayerAndGP(Optional<GamePlayer> gp, Optional<Player> player) {
+        if (!player.isPresent()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>() {{
+                put("error", "You must be login first");
+            }}, HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!gp.isPresent()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>() {{
+                put("error", "The GamePlayer doesn´t exist");
+            }}, HttpStatus.UNAUTHORIZED);
+        }
+
+        if (gp.get().getPlayer().getId() != player.get().getId()) {
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>() {{
+                put("error", "The current user is not the GamePlayer the ID references");
+            }}, HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(new LinkedHashMap<String, Object>() {{
+            put("error", "All OK");
+        }}, HttpStatus.OK);
+    }
+
+        private Optional<Player> getPlayerOptional(Authentication authentication) {
         return authentication == null ? Optional.empty() : playerRepo.findByUserName(authentication.getName());
     }
 
@@ -208,25 +299,78 @@ public class SalvoController {
         }};
     }
 
-//    private Map<String, Object> mapPlayerinfo(Player player) {
-//        return new LinkedHashMap<String, Object>() {{
-//            put("id", player.getId());
-//            put("email", player.getUserName());
-//        }};
-//    }
-//
-//    private List<Object> mapGamePlayersinfo(Set<GamePlayer> gps) {
-//        return gps.stream()
-//                .map(gp -> new LinkedHashMap<String, Object>() {{
-//                    put("id", gp.getId());
-//                    put("player", gp.getPlayer().toDTO());
-//                }})
-//                .collect(toList());
-//    }
-//
-//    private List<Object> mapShipsinfo(Set<Ship> ships) {
-//        return ships.stream()
-//                .map(Ship::toDTO)
-//                .collect(toList());
-//    }
+    private boolean correctShipSize(Ship ship) {
+        switch (ship.getType()) {
+            case "carrier":
+                return ship.getLocation().size() == 5;
+            case "battleship":
+                return ship.getLocation().size() == 4;
+            case "submarine":
+                return ship.getLocation().size() == 3;
+            case "destroyer":
+                return ship.getLocation().size() == 3;
+            case "patrolBoat":
+                return ship.getLocation().size() == 2;
+            default:
+                return false; // Incorrect type
+        }
+    }
+
+    private Map<String, String> possibleLocations() {
+        return new LinkedHashMap<String, String>() {{
+            put("A", "1");
+            put("B", "2");
+            put("C", "3");
+            put("D", "4");
+            put("E", "5");
+            put("F", "6");
+            put("G", "7");
+            put("H", "8");
+            put("I", "9");
+            put("J", "10");
+        }};
+
+    }
+
+    private boolean correctLocations(List<String> locations) {
+
+        return locations
+                .stream()
+                .allMatch(location -> possibleLocations().containsKey(location.substring(0, 1))
+                        && possibleLocations().containsValue(location.substring(1)))                  // Locations are on range
+                && new HashSet<>(locations).size() == locations.size();                             // Locations are not repeated
+    }
+
+    private boolean correctShipsLocations(Ship ship) {
+
+        if (!correctLocations(ship.getLocation())) {
+            return false;
+        }
+
+        List<Integer> numbers = ship.getLocation()
+                .stream()
+                .map(location -> Integer.valueOf(location.substring(1))).collect(toList());
+        List<String> letters = ship.getLocation()
+                .stream()
+                .map(location -> location.substring(0,1)).collect(toList());
+        Supplier<IntStream> indexes = () -> IntStream.range(1, numbers.size());
+
+        boolean sameNumbers = indexes.get().allMatch(i -> numbers.get(i) == numbers.get(i-1));
+        boolean sameLetters= indexes.get().allMatch(i -> letters.get(i).equals(letters.get(i-1)));
+
+        if (sameNumbers && !sameLetters) { //Vertical ship
+            List<Integer> collect = letters.stream().map(letter -> Integer.valueOf(possibleLocations().get(letter))).collect(toList());
+            return indexes.get().allMatch(i -> collect.get(i) == (collect.get(i-1) + 1));
+        } else if (sameLetters && !sameNumbers){ // Horizontal ship
+            return indexes.get().allMatch(i -> numbers.get(i) == numbers.get(i-1) + 1);
+        } else { // Locations are not adjacent
+            return false;
+        }
+    }
+
+    private boolean checkShips(List<Ship> ships) {
+        return ships.size() == 5
+                && ships.stream().allMatch(this::correctShipSize)
+                && ships.stream().allMatch(this::correctShipsLocations);
+    }
 }

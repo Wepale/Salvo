@@ -3,6 +3,10 @@ td {
     width: 50px;
     max-width: 50px;
 }
+.possibleSalvo{
+    background-color: lightsalmon;
+    border-radius: 30%;
+}
 
 .carrier{
     background-color: lightcoral;
@@ -10,7 +14,7 @@ td {
 }
 
 .battleship {
-    background-color: darkcyan;
+    background-color: chocolate;
     border-radius: 15%;
 }
 
@@ -20,7 +24,7 @@ td {
 }
 
 .destroyer {
-    background-color: greenyellow;
+    background-color: mediumslateblue;
     border-radius: 15%;
 }
 
@@ -29,10 +33,21 @@ td {
     border-radius: 15%;
 }
 
-.notPossibleShip {
-    background-color: grey;
-    border-radius: 15%;
+.hit {
+    background-color: red;
+    border-radius: 30%;
 }
+
+.noHit {
+    background-color: deepskyblue;
+    border-radius: 30%;
+}
+
+.notPossibleShip, .notPossibleSalvo {
+    background-color: grey;
+    border-radius: 30%;
+}
+
 
 
 
