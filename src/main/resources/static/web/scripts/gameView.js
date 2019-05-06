@@ -29,7 +29,7 @@ const vm = new Vue({
                 const data = await response.json();
                 console.log(data[0]);
                 if (response.status === 200) {
-                    this.removeClassesFromTable();
+                    //this.removeClassesFromTable();
                     this.checkShips(data[0]);
                     this.printShips(data[0]);
                     this.printSalvoes(data[0]);
@@ -113,23 +113,29 @@ const vm = new Vue({
                     .forEach(location => this.getElement(`mainPlayer${location}`).classList.add(`${ship.type}`)));
         },
 
+        addClassAndTurn(id, myClass, salvo) {
+            this.getElement(id).classList.add(myClass);
+            this.getElement(id).innerHTML = salvo.turn;
+        },
+
         printSalvoes(gameData) {
             gameData.salvoes
                 .forEach(salvo => salvo.locations
                     .forEach(location => {
                         if (salvo.playerId !== gameData.gamePlayers.find(gp => gp.id === Number(this.urlParams)).player.id) {
-                            if (gameData.ships.flatMap(ship => ship.locations).includes(location)) {
-                                this.getElement(`mainPlayer${location}`).classList.add("hit");
-                                this.getElement(`mainPlayer${location}`).innerHTML = salvo.turn;
-                            } else {
-                                this.getElement(`mainPlayer${location}`).classList.add("noHit");
-                                this.getElement(`mainPlayer${location}`).innerHTML = salvo.turn;
-                            }
+
+                            gameData.ships.flatMap(ship => ship.locations).includes(location)
+                                ? this.addClassAndTurn(`mainPlayer${location}`, "hit", salvo)
+                                : this.addClassAndTurn(`mainPlayer${location}`, "noHit", salvo);
+
+                        } else if (gameData.hits.find(hit => hit.turn = Math.max(...gameData.hits
+                            .map(hit => hit.turn))).ships.flatMap(ship => ship.locations).includes(location)) {
+
+                            this.addClassAndTurn(`salvo${location}`, "hit", salvo);
+                            this.salvosLocations.push(location);
 
                         } else {
-                            this.getElement(`salvo${location}`).classList.add("hit");
-                            this.getElement(`salvo${location}`).innerHTML = salvo.turn;
-                            this.salvosLocations.push(location);
+                            this.addClassAndTurn(`salvo${location}`, "noHit", salvo);
                         }
                     }));
         },
@@ -219,6 +225,7 @@ const vm = new Vue({
                 cells.forEach(cell => this.getElement(`mainPlayer${cell}`).classList.add(`${type}`));
                 this.shipIsPlaced[type] = true;
                 this.shipsPosition.push(...cells);
+                console.log(type, cells);
                 this.shipsToSend.push({type: `${type}`, location: cells});
             }
         },

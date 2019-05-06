@@ -25,7 +25,6 @@ public class Ship {
     public Ship(String type, List<String> location) {
         this.type = type;
         this.location = location;
-
     }
 
 

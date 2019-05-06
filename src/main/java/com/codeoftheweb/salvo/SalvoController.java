@@ -6,9 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -81,6 +79,7 @@ public class SalvoController {
                             .flatMap(gp -> gp.getSalvos()
                                     .stream()
                                     .map(Salvo::toDTO)));
+                    put("hits", getHitsOnEnemyShips(game, gp.get()));
                 }})
                 .collect(toList()), HttpStatus.OK)
                 : new ResponseEntity<>( Arrays.asList(new LinkedHashMap<String, Object>() {{
@@ -344,6 +343,7 @@ public class SalvoController {
     private boolean correctShipsLocations(Ship ship) {
 
         if (!correctLocations(ship.getLocation())) {
+            System.out.println("1");
             return false;
         }
 
@@ -360,17 +360,55 @@ public class SalvoController {
 
         if (sameNumbers && !sameLetters) { //Vertical ship
             List<Integer> collect = letters.stream().map(letter -> Integer.valueOf(possibleLocations().get(letter))).collect(toList());
+            System.out.println("2");
             return indexes.get().allMatch(i -> collect.get(i) == (collect.get(i-1) + 1));
         } else if (sameLetters && !sameNumbers){ // Horizontal ship
+            System.out.println("3");
             return indexes.get().allMatch(i -> numbers.get(i) == numbers.get(i-1) + 1);
         } else { // Locations are not adjacent
+            System.out.println("4");
             return false;
         }
     }
 
     private boolean checkShips(List<Ship> ships) {
+        System.out.println(ships.size());
         return ships.size() == 5
                 && ships.stream().allMatch(this::correctShipSize)
                 && ships.stream().allMatch(this::correctShipsLocations);
+    }
+
+    private List<Map<String, Object>> getHitsOnEnemyShips(Game game, GamePlayer gp) {
+        Set<Ship> enemyShips = game.getGamePlayers()
+                .stream()
+                .filter(gamePlayer -> gamePlayer.getId() != gp.getId())
+                .findFirst()
+                .map(GamePlayer::getShips)
+                .orElse(null);
+
+        return enemyShips != null
+                ? gp.getSalvos()
+                .stream()
+                .map(Salvo::getTurn)
+                .map(turn -> new LinkedHashMap<String, Object>() {{
+                    put("turn", turn);
+                    put("ships", enemyShips
+                            .stream()
+                            .filter(ship -> gp.getSalvos()
+                                    .stream()
+                                    .flatMap(salvo -> salvo.getLocations().stream())
+                                    .anyMatch(salvo -> ship.getLocation().contains(salvo)))
+                            .map(ship -> new LinkedHashMap<String, Object>() {{
+                                put("type", ship.getType());
+                                put("locations", ship.getLocation()
+                                        .stream()
+                                        .filter(location -> gp.getSalvos()
+                                                .stream()
+                                                .flatMap(salvo -> salvo.getLocations().stream())
+                                                .anyMatch(shoot -> shoot.equals(location)))
+                                        .collect(toList()));
+                            }}).collect(toList()));
+                }}).collect(toList())
+                : Arrays.asList();
     }
 }
