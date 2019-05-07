@@ -160,11 +160,11 @@
                             <li>
                                 <ul>
                                     <li v-for="ship in hit.ships">
-                                        <span v-if="ship.type === 'carrier'">Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else-if="ship.type === 'battleship'">Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else-if="ship.type === 'submarine'">Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else-if="ship.type === 'destroyer'">Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else="ship.type === 'patrolBoat'">Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-if="ship.type === 'carrier'">Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else-if="ship.type === 'battleship'">Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else-if="ship.type === 'submarine'">Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else-if="ship.type === 'destroyer'">Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else="ship.type === 'patrolBoat'">Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
                                     </li>
                                 </ul>
                             </li>
@@ -201,11 +201,11 @@
                             <li>
                                 <ul>
                                     <li v-for="ship in hit.ships">
-                                        <span v-if="ship.type === 'carrier'">Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else-if="ship.type === 'battleship'">Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else-if="ship.type === 'submarine'">Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else-if="ship.type === 'destroyer'">Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
-                                        <span v-else="ship.type === 'patrolBoat'">Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-if="ship.type === 'carrier'">Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else-if="ship.type === 'battleship'">Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else-if="ship.type === 'submarine'">Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else-if="ship.type === 'destroyer'">Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
+                                        <span v-else="ship.type === 'patrolBoat'">Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i></span>
                                     </li>
                                 </ul>
                             </li>
