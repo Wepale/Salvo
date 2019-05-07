@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
           integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
 </head>
 <body>
 <div class="container">
@@ -26,108 +27,193 @@
             </div>
         </div>
     </div>
-    <div class="row" id="vueGameView">
-        <div class="col-sm">
-            <h1 class="text-center">Ships Location</h1>
-            <div class="d-flex">
-                <div v-if="!shipIsPlaced.carrier">
-                    <p>Carrier</p>
-                    <form>
-                        <input type="radio" name="ship" value="5Vcarrier" id="carrierV" v-model="check"
-                               @click="addEventsOnShipTable()">
-                        <label for="carrierV">Vertical</label>
-                        <input type="radio" name="ship" value="5Hcarrier" id="carrierH" v-model="check"
-                               @click="addEventsOnShipTable()">
-                        <label for="carrierH">Horizontal</label>
-                    </form>
+    <div id="vueGameView">
+
+        <div class="row">
+            <div class="col-sm">
+                <h1 class="text-center">Ships Location</h1>
+                <div class="d-flex">
+                    <div v-if="!shipIsPlaced.carrier">
+                        <p>Carrier</p>
+                        <form>
+                            <input type="radio" name="ship" value="5Vcarrier" id="carrierV" v-model="check"
+                                   @click="addEventsOnShipTable()">
+                            <label for="carrierV">Vertical</label>
+                            <input type="radio" name="ship" value="5Hcarrier" id="carrierH" v-model="check"
+                                   @click="addEventsOnShipTable()">
+                            <label for="carrierH">Horizontal</label>
+                        </form>
+                    </div>
+                    <div v-if="!shipIsPlaced.battleship">
+                        <p>Battleship</p>
+                        <form>
+                            <input type="radio" name="ship" value="4Vbattleship" id="battleshipV" v-model="check"
+                                   @click="addEventsOnShipTable()">
+                            <label for="battleshipV">Vertical</label>
+                            <input type="radio" name="ship" value="4Hbattleship" id="battlesHipH" v-model="check"
+                                   @click="addEventsOnShipTable()">
+                            <label for="battleshipH">Horizontal</label>
+                        </form>
+                    </div>
+                    <div v-if="!shipIsPlaced.submarine">
+                        <p>Submarine</p>
+                        <form>
+                            <input type="radio" name="ship" value="3Vsubmarine" id="submarineV" v-model="check"
+                                   @click="addEventsOnShipTable()">
+                            <label for="submarineV">Vertical</label>
+                            <input type="radio" name="ship" value="3Hsubmarine" id="submarineH" v-model="check"
+                                   @click="addEventsOnShipTable()">
+                            <label for="submarineH">Horizontal</label>
+                        </form>
+                    </div>
+                    <div v-if="!shipIsPlaced.destroyer">
+                        <p>Destroyer</p>
+                        <form>
+                            <input type="radio" name="ship" value="3Vdestroyer" id="destroyerV" v-model="check"
+                                   @click="addEventsOnShipTable">
+                            <label for="destroyerV">Vertical</label>
+                            <input type="radio" name="ship" value="3Hdestroyer" id="destroyerH" v-model="check"
+                                   @click="addEventsOnShipTable">
+                            <label for="destroyerH">Horizontal</label>
+                        </form>
+                    </div>
+                    <div v-if="!shipIsPlaced.patrolBoat">
+                        <p>Patrol Boat</p>
+                        <form>
+                            <input type="radio" name="ship" value="2VpatrolBoat" id="patrolBoatV" v-model="check"
+                                   @click="addEventsOnShipTable">
+                            <label for="patrolBoatV">Vertical</label>
+                            <input type="radio" name="ship" value="2HpatrolBoat" id="patrolBoatH" v-model="check"
+                                   @click="addEventsOnShipTable">
+                            <label for="patrolBoatH">Horizontal</label>
+                        </form>
+                    </div>
                 </div>
-                <div v-if="!shipIsPlaced.battleship">
-                    <p>Battleship</p>
-                    <form>
-                        <input type="radio" name="ship" value="4Vbattleship" id="battleshipV" v-model="check"
-                               @click="addEventsOnShipTable()">
-                        <label for="battleshipV">Vertical</label>
-                        <input type="radio" name="ship" value="4Hbattleship" id="battlesHipH" v-model="check"
-                               @click="addEventsOnShipTable()">
-                        <label for="battleshipH">Horizontal</label>
-                    </form>
-                </div>
-                <div v-if="!shipIsPlaced.submarine">
-                    <p>Submarine</p>
-                    <form>
-                        <input type="radio" name="ship" value="3Vsubmarine" id="submarineV" v-model="check"
-                               @click="addEventsOnShipTable()">
-                        <label for="submarineV">Vertical</label>
-                        <input type="radio" name="ship" value="3Hsubmarine" id="submarineH" v-model="check"
-                               @click="addEventsOnShipTable()">
-                        <label for="submarineH">Horizontal</label>
-                    </form>
-                </div>
-                <div v-if="!shipIsPlaced.destroyer">
-                    <p>Destroyer</p>
-                    <form>
-                        <input type="radio" name="ship" value="3Vdestroyer" id="destroyerV" v-model="check"
-                               @click="addEventsOnShipTable">
-                        <label for="destroyerV">Vertical</label>
-                        <input type="radio" name="ship" value="3Hdestroyer" id="destroyerH" v-model="check"
-                               @click="addEventsOnShipTable">
-                        <label for="destroyerH">Horizontal</label>
-                    </form>
-                </div>
-                <div v-if="!shipIsPlaced.patrolBoat">
-                    <p>Patrol Boat</p>
-                    <form>
-                        <input type="radio" name="ship" value="2VpatrolBoat" id="patrolBoatV" v-model="check"
-                               @click="addEventsOnShipTable">
-                        <label for="patrolBoatV">Vertical</label>
-                        <input type="radio" name="ship" value="2HpatrolBoat" id="patrolBoatH" v-model="check"
-                               @click="addEventsOnShipTable">
-                        <label for="patrolBoatH">Horizontal</label>
-                    </form>
-                </div>
-            </div>
-            <table class="table table-bordered">
-                <thead>
+                <table class="table table-bordered">
+                    <thead>
                     <tr>
                         <td></td>
                         <td v-for="n in 10">{{ n }}</td>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <tr v-for="letter of tableLetters">
                         <td>{{ letter }}</td>
                         <td class="shipTable" v-for="number in 10" :id="`mainPlayer${letter}${number}`"
-                            :data-size="check.slice(0,1)" :data-direction="check.slice(1,2)" :data-type="check.slice(2)"></td>
+                            :data-size="check.slice(0,1)" :data-direction="check.slice(1,2)"
+                            :data-type="check.slice(2)"></td>
                     </tr>
-                </tbody>
-            </table>
-            <div class="col-sm">
-                <button :disabled="shipsToSend.length != 5" @click="postShips()">Place Ships</button>
+                    </tbody>
+                </table>
+                <div class="col-sm">
+                    <button :disabled="shipsToSend.length != 5" @click="postShips()">Place Ships</button>
+                </div>
             </div>
-        </div>
 
-        <div class="col-sm">
-            <h1 class="text-center">Salvoes</h1>
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <td></td>
-                    <td v-for="n in 10">{{ n }}</td>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="letter of tableLetters">
-                    <td>{{ letter }}</td>
-                    <td class="salvoTable" v-for="number in 10" :id="`salvo${letter}${number}`"></td>
-                </tr>
-                </tbody>
-            </table>
             <div class="col-sm">
-                <button :disabled="newSalvo.length != 5" @click="postSalvo()">Shoot</button>
+                <h1 class="text-center">Salvoes</h1>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <td></td>
+                        <td v-for="n in 10">{{ n }}</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="letter of tableLetters">
+                        <td>{{ letter }}</td>
+                        <td class="salvoTable" v-for="number in 10" :id="`salvo${letter}${number}`"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="col-sm">
+                    <button :disabled="newSalvo.length != 5" @click="postSalvo()">Shoot</button>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row">
+        <div class="row mt-3">
+            <div class="col-sm">
+                <div class="grid">
+                    <template v-for="ship in hitsOnMe">
+                        <p v-if="ship.type === 'carrier'">
+                            Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 5 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else-if="ship.type === 'battleship'">
+                            Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 4 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else-if="ship.type === 'submarine'">
+                            Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 3 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else-if="ship.type === 'destroyer'" :class="{ line: ship.hitLocations.length === 3}">
+                            Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 3 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else="ship.type === 'patrolBoat'">
+                            Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 2 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                    </template>
+                </div>
+                <h3 class="text-center">Hits on your ships</h3>
+                <div>
+                    <div v-for="hit in gameInfo.hitsOnMe">
+                        <ul>
+                            <li>Turn {{hit.turn}}</li>
+                            <li>
+                                <ul>
+                                    <li v-for="ship in hit.ships">
+                                        <span v-if="ship.type === 'carrier'">Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else-if="ship.type === 'battleship'">Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else-if="ship.type === 'submarine'">Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else-if="ship.type === 'destroyer'">Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else="ship.type === 'patrolBoat'">Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm">
+                <div class="grid">
+                    <template v-for="ship in hitsOnEnemy">
+                        <p v-if="ship.type === 'carrier'">
+                            Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 5 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else-if="ship.type === 'battleship'">
+                            Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 4 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else-if="ship.type === 'submarine'">
+                            Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 3 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else-if="ship.type === 'destroyer'">
+                            Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 3 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                        <p v-else="ship.type === 'patrolBoat'">
+                            Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal hitted"></i><i v-for="n in 2 - ship.hitLocations.length" class="fas fa-haykal"></i>
+                        </p>
+                    </template>
+                </div>
+                <h3 class="text-center">Hits on enemy ships</h3>
+                <div>
+                    <div v-for="hit in gameInfo.hitsOnEnemy">
+                        <ul>
+                            <li>Turn {{hit.turn}}</li>
+                            <li>
+                                <ul>
+                                    <li v-for="ship in hit.ships">
+                                        <span v-if="ship.type === 'carrier'">Carrier <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else-if="ship.type === 'battleship'">Battleship <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else-if="ship.type === 'submarine'">Submarine <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else-if="ship.type === 'destroyer'">Destroyer <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                        <span v-else="ship.type === 'patrolBoat'">Patrol Boat <i v-for="location in ship.hitLocations" class="fas fa-haykal"></i></span>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>

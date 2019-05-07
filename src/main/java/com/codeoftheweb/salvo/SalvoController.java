@@ -79,7 +79,8 @@ public class SalvoController {
                             .flatMap(gp -> gp.getSalvos()
                                     .stream()
                                     .map(Salvo::toDTO)));
-                    put("hits", getHitsOnEnemyShips(game, gp.get()));
+                    put("hitsOnEnemy", getHitsOnEnemyShips(game, gp.get()));
+                    put("hitsOnMe", getHitsOnMyShips(game, gp.get()));
                 }})
                 .collect(toList()), HttpStatus.OK)
                 : new ResponseEntity<>( Arrays.asList(new LinkedHashMap<String, Object>() {{
@@ -390,25 +391,71 @@ public class SalvoController {
                 ? gp.getSalvos()
                 .stream()
                 .map(Salvo::getTurn)
+                .sorted(Comparator.reverseOrder())
                 .map(turn -> new LinkedHashMap<String, Object>() {{
                     put("turn", turn);
                     put("ships", enemyShips
                             .stream()
                             .filter(ship -> gp.getSalvos()
                                     .stream()
+                                    .filter(salvo -> salvo.getTurn() == turn)
                                     .flatMap(salvo -> salvo.getLocations().stream())
-                                    .anyMatch(salvo -> ship.getLocation().contains(salvo)))
+                                    .anyMatch(shoot -> ship.getLocation().contains(shoot)))
                             .map(ship -> new LinkedHashMap<String, Object>() {{
                                 put("type", ship.getType());
-                                put("locations", ship.getLocation()
+                                put("hitLocations", ship.getLocation()
                                         .stream()
-                                        .filter(location -> gp.getSalvos()
+                                        .flatMap(location -> gp.getSalvos()
                                                 .stream()
+                                                .filter(salvo -> salvo.getTurn() == turn)
                                                 .flatMap(salvo -> salvo.getLocations().stream())
-                                                .anyMatch(shoot -> shoot.equals(location)))
+                                                .filter(shoot -> shoot.equals(location)))
                                         .collect(toList()));
                             }}).collect(toList()));
                 }}).collect(toList())
                 : Arrays.asList();
     }
+
+    private List<Map<String, Object>> getHitsOnMyShips(Game game, GamePlayer gp) {
+        Set<Ship> myShips = game.getGamePlayers()
+                .stream()
+                .filter(gamePlayer -> gamePlayer.getId() == gp.getId())
+                .findFirst()
+                .map(GamePlayer::getShips)
+                .orElse(null);
+        GamePlayer enemyGp = game.getGamePlayers()
+                .stream()
+                .filter(gamePlayer -> gamePlayer.getId() != gp.getId())
+                .findFirst()
+                .orElse(null);
+
+        return enemyGp != null
+                ? enemyGp.getSalvos()
+                .stream()
+                .map(Salvo::getTurn)
+                .sorted(Comparator.reverseOrder())
+                .map(turn -> new LinkedHashMap<String, Object>() {{
+                    put("turn", turn);
+                    put("ships", myShips
+                            .stream()
+                            .filter(ship -> enemyGp.getSalvos()
+                                    .stream()
+                                    .filter(salvo -> salvo.getTurn() == turn)
+                                    .flatMap(salvo -> salvo.getLocations().stream())
+                                    .anyMatch(shoot -> ship.getLocation().contains(shoot)))
+                            .map(ship -> new LinkedHashMap<String, Object>() {{
+                                put("type", ship.getType());
+                                put("hitLocations", ship.getLocation()
+                                        .stream()
+                                        .flatMap(location -> enemyGp.getSalvos()
+                                                .stream()
+                                                .filter(salvo -> salvo.getTurn() == turn)
+                                                .flatMap(salvo -> salvo.getLocations().stream())
+                                                .filter(shoot -> shoot.equals(location)))
+                                        .collect(toList()));
+                            }}).collect(toList()));
+                }}).collect(toList())
+                : Arrays.asList();
+    }
+
 }

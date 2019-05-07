@@ -34,7 +34,7 @@ td {
 }
 
 .hit {
-    background-color: red;
+    background-color: orange;
     border-radius: 30%;
 }
 
@@ -46,6 +46,23 @@ td {
 .notPossibleShip, .notPossibleSalvo {
     background-color: grey;
     border-radius: 30%;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.hitted {
+    color: orange;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+
+.line {
+    text-decoration: line-through;
 }
 
 

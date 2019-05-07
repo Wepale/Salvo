@@ -18,6 +18,8 @@ const vm = new Vue({
         salvosLocations: [],
         newSalvo: [],
         turn: 0,
+        hitsOnMe: [],
+        hitsOnEnemy: []
     },
     methods: {
         async getData(url) {
@@ -30,11 +32,16 @@ const vm = new Vue({
                 console.log(data[0]);
                 if (response.status === 200) {
                     //this.removeClassesFromTable();
+                    this.gameInfo = data[0];
                     this.checkShips(data[0]);
                     this.printShips(data[0]);
                     this.printSalvoes(data[0]);
                     this.turn = this.getHighestTurn(data[0]);
                     console.log(this.getHighestTurn(data[0]));
+                    this.hitsOnMe = this.getHitsOnShips(this.gameInfo, "hitsOnMe");
+                    this.hitsOnEnemy = this.getHitsOnShips(this.gameInfo, "hitsOnEnemy");
+                    console.log(this.hitsOnMe);
+                    console.log(this.hitsOnEnemy);
                 } else if (response.status === 403) {
                     alert (`Error ${response.status}: ${data[0].error}`)
                 } else if (response.status === 401) {
@@ -61,6 +68,7 @@ const vm = new Vue({
                 const message = await response.json();
                 if (response.status === 201) {
                     this.getData(`${this.gameViewURL}${this.urlParams}`);
+                    this.shipsToSend = [];
                 } else if (response.status === 403 || response.status === 401) {
                     alert(`${response.status}: ${message.error}`)
                 } else {
@@ -128,8 +136,10 @@ const vm = new Vue({
                                 ? this.addClassAndTurn(`mainPlayer${location}`, "hit", salvo)
                                 : this.addClassAndTurn(`mainPlayer${location}`, "noHit", salvo);
 
-                        } else if (gameData.hits.find(hit => hit.turn = Math.max(...gameData.hits
-                            .map(hit => hit.turn))).ships.flatMap(ship => ship.locations).includes(location)) {
+                        } else if (gameData.hitsOnEnemy
+                            .flatMap(hit => hit.ships
+                                .flatMap(ship => ship.hitLocations))
+                            .includes(location)) {
 
                             this.addClassAndTurn(`salvo${location}`, "hit", salvo);
                             this.salvosLocations.push(location);
@@ -179,7 +189,7 @@ const vm = new Vue({
             }
         },
 
-        getHighestTurn(gameData){
+        getHighestTurn(gameData) {
             const turns = gameData.salvoes
                 .filter(salvo => salvo.locations
                     .some(location => salvo.playerId === gameData.gamePlayers.find(gp => gp.id === Number(this.urlParams)).player.id))
@@ -188,6 +198,15 @@ const vm = new Vue({
             return turns.length
                 ? Math.max(...turns) + 1
                 : 1
+        },
+
+        getHitsOnShips(gameData, meOrEnemy) {
+            return ["carrier", "battleship", "submarine", "destroyer", "patrolBoat"].map(shipType => {
+                return {
+                    type: shipType,
+                    hitLocations: gameData[meOrEnemy].flatMap(hit => hit.ships.filter(ship => ship.type === shipType)).flatMap(ship => ship.hitLocations)
+                }
+            });
         },
 
         checkShips(gameData) {
