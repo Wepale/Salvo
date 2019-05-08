@@ -19,7 +19,9 @@ const vm = new Vue({
         newSalvo: [],
         turn: 0,
         hitsOnMe: [],
-        hitsOnEnemy: []
+        hitsOnEnemy: [],
+        intervalID: "",
+        allCorrect: true
     },
     methods: {
         async getData(url) {
@@ -31,17 +33,16 @@ const vm = new Vue({
                 const data = await response.json();
                 console.log(data[0]);
                 if (response.status === 200) {
-                    //this.removeClassesFromTable();
+                    this.makeInterval();
+                    console.log("IM executin every 3 seconds");
                     this.gameInfo = data[0];
                     this.checkShips(data[0]);
                     this.printShips(data[0]);
                     this.printSalvoes(data[0]);
                     this.turn = this.getHighestTurn(data[0]);
-                    console.log(this.getHighestTurn(data[0]));
                     this.hitsOnMe = this.getHitsOnShips(this.gameInfo, "hitsOnMe");
                     this.hitsOnEnemy = this.getHitsOnShips(this.gameInfo, "hitsOnEnemy");
-                    console.log(this.hitsOnMe);
-                    console.log(this.hitsOnEnemy);
+                    this.makeGameLogic(this.gameInfo);
                 } else if (response.status === 403) {
                     alert (`Error ${response.status}: ${data[0].error}`)
                 } else if (response.status === 401) {
@@ -70,7 +71,8 @@ const vm = new Vue({
                     this.getData(`${this.gameViewURL}${this.urlParams}`);
                     this.shipsToSend = [];
                 } else if (response.status === 403 || response.status === 401) {
-                    alert(`${response.status}: ${message.error}`)
+                    alert(`${response.status}: ${message.error}`);
+                    this.removeShipsFromTable();
                 } else {
                     alert("Something went wrong, try again later");
                 }
@@ -113,6 +115,11 @@ const vm = new Vue({
         removeClassesFromTable(){
             document.querySelectorAll(".possibleSalvo, .possibleShip")
                 .forEach(td => td.classList.remove("possibleSalvo", "possibleShip"))
+        },
+
+        removeShipsFromTable() {
+            Object.keys(this.shipIsPlaced).forEach(ship => document.querySelectorAll(`.${ship}`)
+                .forEach(td => td.classList.remove(ship)));
         },
 
         printShips(gameData) {
@@ -193,20 +200,65 @@ const vm = new Vue({
             const turns = gameData.salvoes
                 .filter(salvo => salvo.locations
                     .some(location => salvo.playerId === gameData.gamePlayers.find(gp => gp.id === Number(this.urlParams)).player.id))
-                        .map(salvo => salvo.turn);
+                .map(salvo => salvo.turn);
 
             return turns.length
                 ? Math.max(...turns) + 1
                 : 1
         },
 
+        highestTurnThanOpponent(gameData) {
+            const myTurn = this.getHighestTurn(gameData) - 1;
+            const enemyGP = gameData.gamePlayers.find(gp => gp.id !== Number(this.urlParams));
+            const turns = enemyGP
+                ? gameData.salvoes
+                .filter(salvo => salvo.locations
+                    .some(location => salvo.playerId === enemyGP.player.id))
+                    .map(salvo => salvo.turn)
+                : [];
+
+            const enemyTurn = turns.length ? Math.max(...turns) : 0;
+            return myTurn > enemyTurn
+        },
+
+        winGame(gameData, meOrEnemy) {
+            return gameData[meOrEnemy]
+                .flatMap(hit => hit.ships)
+                .flatMap(ship => ship.hitLocations)
+                .length === 17;
+        },
+
+        gameIsFinish(gameData) {
+            return this.winGame(gameData, "hitsOnMe") || this.winGame(gameData, "hitsOnEnemy");
+        },
+
         getHitsOnShips(gameData, meOrEnemy) {
             return ["carrier", "battleship", "submarine", "destroyer", "patrolBoat"].map(shipType => {
                 return {
                     type: shipType,
-                    hitLocations: gameData[meOrEnemy].flatMap(hit => hit.ships.filter(ship => ship.type === shipType)).flatMap(ship => ship.hitLocations)
+                    hitLocations: gameData[meOrEnemy]
+                        .flatMap(hit => hit.ships
+                            .filter(ship => ship.type === shipType))
+                        .flatMap(ship => ship.hitLocations)
                 }
             });
+        },
+
+        makeGameLogic(gameData) {
+            if (!this.highestTurnThanOpponent(gameData) && !this.gameIsFinish(gameData) && gameData.gamePlayers.length === 2) {
+                this.addEventsOnSalvoTable();
+            }
+
+            if(this.gameIsFinish(gameData)) {
+                clearInterval(this.intervalID);
+            }
+        },
+
+        makeInterval() {
+            if (this.allCorrect) {
+                this.intervalID = window.setInterval(() => this.getData(`${this.gameViewURL}${this.urlParams}`), 3000);
+                this.allCorrect = false;
+            }
         },
 
         checkShips(gameData) {
@@ -332,9 +384,5 @@ const vm = new Vue({
     created() {
         this.getData(`${this.gameViewURL}${this.urlParams}`);
     },
-    mounted() {
-        this.makeSalvoTableHover();
-        this.placeSalvo();
-    }
 });
 

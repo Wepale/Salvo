@@ -33,7 +33,6 @@ public class Player {
     private String password;
 
     public Player() { }
-//    PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     public Player(String userName, String password) {
         this.userName = userName;
         this.password = PasswordEncoderFactories.createDelegatingPasswordEncoder().encode(password);

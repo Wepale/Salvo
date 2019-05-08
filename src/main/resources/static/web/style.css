@@ -65,6 +65,10 @@ ul {
     text-decoration: line-through;
 }
 
+.scroll {
+    overflow: auto;
+}
+
 
 
 

@@ -15,7 +15,7 @@ const vmGames = new Vue({
                 })).json();
                 console.log(data);
                 this.playerID = data.player ? data.player.id : null;
-                this.games = data.games;
+                this.games = data.games.sort((a,b) => a.created - b.created ? 1 : -1);
             } catch (error) {
                 console.log(`Failed: ${error}`);
             }
@@ -84,35 +84,6 @@ const vmGames = new Vue({
                     console.log("Error: ", error)
                 }
         },
-
-        async placeShips() {
-            try {
-                let response = await fetch('http://localhost:8080/api/games/players/15/ships', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(
-                        [
-                            {type: "Carrier", location: ["A1", "A2", "A3"]},
-                            {type: "Destroyer", location: ["B1", "B2", "B3"]}
-                        ]
-                    )
-                });
-                const message = await response.json();
-                if (response.status === 201) {
-                    window.location.href = "http://localhost:8080/web/game.html?gp=15";
-                } else if (response.status === 403 || response.status === 401) {
-                    alert(`${response.status}: ${message.error}`)
-                } else {
-                    alert("Something went wrong, try again later");
-                }
-            } catch (error) {
-                console.log("Error: ", error)
-            }
-        }
     },
 
     created() {

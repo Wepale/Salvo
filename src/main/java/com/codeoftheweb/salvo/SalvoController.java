@@ -81,6 +81,12 @@ public class SalvoController {
                                     .map(Salvo::toDTO)));
                     put("hitsOnEnemy", getHitsOnEnemyShips(game, gp.get()));
                     put("hitsOnMe", getHitsOnMyShips(game, gp.get()));
+                    put("opponentHasShips", game.getGamePlayers()
+                            .stream()
+                            .filter(gameP -> gameP.getId() != gpId)
+                            .findFirst()
+                            .map(gameP -> !gameP.getShips().isEmpty())
+                            .orElse(false));
                 }})
                 .collect(toList()), HttpStatus.OK)
                 : new ResponseEntity<>( Arrays.asList(new LinkedHashMap<String, Object>() {{
@@ -97,16 +103,22 @@ public class SalvoController {
     }
 
     @RequestMapping(value = "/players", method = RequestMethod.POST)
-    public ResponseEntity<String> signUpPlayer(@RequestBody Player player) {
+    public ResponseEntity<Map<String, Object>> signUpPlayer(@RequestBody Player player) {
         if (player.getUserName().isEmpty() || player.getPassword().isEmpty()) {
-            return new ResponseEntity<>("Missing data", HttpStatus.LENGTH_REQUIRED);
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "Missing data");
+            }}, HttpStatus.LENGTH_REQUIRED);
         }
         if (playerRepo.findByUserName(player.getUserName()).isPresent()) {
-            return new ResponseEntity<>("Name already in use", HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+                put("error", "Name already in use");
+            }}, HttpStatus.FORBIDDEN);
         }
-
         playerRepo.save(player);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
+            put("error", "All OK, player created");
+        }}, HttpStatus.CREATED);
+
     }
 
     @RequestMapping("/games/{gameId}/players")
