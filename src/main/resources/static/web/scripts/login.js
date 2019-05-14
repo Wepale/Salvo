@@ -62,6 +62,7 @@ const vmLog = new Vue({
                 } else if (response.status === 403) {
                     alert(`${response.status}: Sorry, name already in use`)
                 } else if (response.status === 201) {
+                    console.log("SingUP Correct");
                     this.login();
                 }
             } catch (error) {

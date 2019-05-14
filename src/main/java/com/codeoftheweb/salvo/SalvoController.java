@@ -40,7 +40,7 @@ public class SalvoController {
                     .collect(toList()));
         }};
     }
-
+        //Change if for map Optional
     @RequestMapping(value = "/games", method = RequestMethod.POST)
     public ResponseEntity<Map<String, Object>> createGame(@RequestBody Game game, Authentication authentication){
         Optional<Player> player = getPlayerOptional(authentication);
@@ -114,6 +114,9 @@ public class SalvoController {
                 put("error", "Name already in use");
             }}, HttpStatus.FORBIDDEN);
         }
+
+        System.out.println(player.getUserName());
+        System.out.println(player.getPassword());
         playerRepo.save(player);
         return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
             put("error", "All OK, player created");

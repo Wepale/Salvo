@@ -221,15 +221,30 @@ const vm = new Vue({
             return myTurn > enemyTurn
         },
 
+        sameTurnThanOpponent(gameData) {
+            const myTurn = this.getHighestTurn(gameData) - 1;
+            const enemyGP = gameData.gamePlayers.find(gp => gp.id !== Number(this.urlParams));
+            const turns = enemyGP
+                ? gameData.salvoes
+                    .filter(salvo => salvo.locations
+                        .some(location => salvo.playerId === enemyGP.player.id))
+                    .map(salvo => salvo.turn)
+                : [];
+
+            const enemyTurn = turns.length ? Math.max(...turns) : 0;
+            return myTurn === enemyTurn
+        },
+
         winGame(gameData, meOrEnemy) {
             return gameData[meOrEnemy]
                 .flatMap(hit => hit.ships)
                 .flatMap(ship => ship.hitLocations)
-                .length === 17;
+                .length === 17
+                && this.sameTurnThanOpponent(gameData);
         },
 
         gameIsFinish(gameData) {
-            return this.winGame(gameData, "hitsOnMe") || this.winGame(gameData, "hitsOnEnemy");
+            return this.winGame(gameData, "hitsOnMe") || this.winGame(gameData, "hitsOnEnemy")
         },
 
         getHitsOnShips(gameData, meOrEnemy) {
@@ -245,7 +260,7 @@ const vm = new Vue({
         },
 
         makeGameLogic(gameData) {
-            if (!this.highestTurnThanOpponent(gameData) && !this.gameIsFinish(gameData) && gameData.gamePlayers.length === 2) {
+            if (!this.highestTurnThanOpponent(gameData) && !this.gameIsFinish(gameData) && gameData.gamePlayers.length === 2 && this.newSalvo.length !==5) {
                 this.addEventsOnSalvoTable();
             }
 
