@@ -3,6 +3,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.function.Supplier;
@@ -115,9 +116,7 @@ public class SalvoController {
             }}, HttpStatus.FORBIDDEN);
         }
 
-        System.out.println(player.getUserName());
-        System.out.println(player.getPassword());
-        playerRepo.save(player);
+        playerRepo.save(new Player(player.getUserName(), PasswordEncoderFactories.createDelegatingPasswordEncoder().encode(player.getPassword())));
         return new ResponseEntity<>(new LinkedHashMap<String, Object>(){{
             put("error", "All OK, player created");
         }}, HttpStatus.CREATED);

@@ -40,10 +40,10 @@ public class SalvoApplication {
 	}
 
 	// PLAYERS
-	Player player1 = new Player("j.bauer@ctu.gov", "24");
-	Player player2 = new Player("c.obrian@ctu.gov", "42");
-	Player player3 = new Player("kim_bauer@gmail.com","kb");
-	Player player4 = new Player("t.almeida@ctu.gov","mole");
+	Player player1 = new Player("j.bauer@ctu.gov", PasswordEncoderFactories.createDelegatingPasswordEncoder().encode("24"));
+	Player player2 = new Player("c.obrian@ctu.gov", PasswordEncoderFactories.createDelegatingPasswordEncoder().encode("42"));
+	Player player3 = new Player("kim_bauer@gmail.com", PasswordEncoderFactories.createDelegatingPasswordEncoder().encode("kb"));
+	Player player4 = new Player("t.almeida@ctu.gov", PasswordEncoderFactories.createDelegatingPasswordEncoder().encode("mole"));
 
 	//GAMES
 	Game game1 = new Game(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now()));
@@ -366,15 +366,15 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		PasswordEncoder encoder =
 				PasswordEncoderFactories.createDelegatingPasswordEncoder();
 		http.authorizeRequests()
-//				.antMatchers("/rest/**").denyAll()
+				.antMatchers("/rest/**").denyAll()
 				.antMatchers("/api/games",
 						"/api/players",
 						"/api/games/**",
 						"/web/**",
-						"/favicon.ico",
-                        "/rest/**")
+						"/favicon.ico")
 				.permitAll()
-				.anyRequest().hasAuthority("USER");
+				.anyRequest()
+				.hasAuthority("USER");
 
 		http.formLogin()
 				.loginPage("/api/login")

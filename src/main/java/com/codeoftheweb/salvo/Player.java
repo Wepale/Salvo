@@ -2,18 +2,18 @@ package com.codeoftheweb.salvo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import java.util.*;
-
-import static java.util.stream.Collectors.toList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 public class Player {
@@ -35,7 +35,7 @@ public class Player {
     public Player() { }
     public Player(String userName, String password) {
         this.userName = userName;
-        this.password = PasswordEncoderFactories.createDelegatingPasswordEncoder().encode(password);
+        this.password = password;
     }
 
     // Get Methods
@@ -62,7 +62,7 @@ public class Player {
 
     @JsonIgnore
     public List<Object> getGames() {
-        return gamePlayers.stream().map(gp -> gp.getGame().toDTO()).collect(toList());
+        return gamePlayers.stream().map(gp -> gp.getGame().toDTO()).collect(Collectors.toList());
     }
 
     public void addScore(Score score) {
