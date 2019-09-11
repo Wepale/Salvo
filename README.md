@@ -1,1 +1,2 @@
 "# Salvo" 
+gradle bootRun 
